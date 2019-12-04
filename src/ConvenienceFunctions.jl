@@ -2,6 +2,8 @@ module ConvenienceFunctions
 
 using LinearAlgebra
 using Distributions
+using Formatting
+
 
 export
     inverse_sample_covariance,
@@ -11,8 +13,38 @@ export
     zero_small_values,
     zero_small_values!,
     check_symmetric_matrix,
-    show_matrix
+    show_matrix,
+    print_complex_matrix
 
+
+function print_complex_matrix(data::AbstractMatrix; cols = 4,
+                              fmt::String = "%.4f", sep::String = "\t")
+
+    f = generate_formatter( fmt )
+    ncols = size(data,2)
+    cols_full = fld(ncols,cols)
+    last_row = mod(ncols,cols)
+    inds_cols = vcat(
+        [(1:cols) .+ cols*k for k = 0:cols_full-1],
+        [(1:last_row) .+ cols_full*cols]
+    )
+    for inds in inds_cols
+        println("Cols $(inds[1]) to $(inds[end])\n")
+        for i = 1:size(data,1)
+            for j in inds
+                val = data[i,j]
+                if typeof(val) <: Complex
+                    print(f(real(val)), " ")
+                    print(f(imag(val) ),"i")
+                else
+                    f(val)
+                end
+                print(sep)
+            end
+            println("")
+        end
+    end
+end
 """
      jacobian_numerical_approximation(f, x, myeps = 1.0e-6)
 
@@ -53,6 +85,11 @@ function show_matrix(x...)
         end
     end
 end
+"""
+    show_matrix(x)
+
+Wrapper for `show(stdout, "text/plain", x)`
+"""
 function show_matrix(x::AbstractArray)
     show(stdout, "text/plain", x)
     println("\n")
@@ -73,6 +110,13 @@ function points_on_sphere(num_pts::Integer, T::DataType=Float64)
     points_on_sphere!(u, num_pts)
     return u
 end
+"""
+    points_on_sphere!(u, num_pts)
+
+Place points on sphere according to sunflower algorithm:
+https://stackoverflow.com/a/44164075/2082968
+
+"""
 function points_on_sphere!(u::AbstractMatrix, num_pts::Integer)
 
     T = eltype(u)
