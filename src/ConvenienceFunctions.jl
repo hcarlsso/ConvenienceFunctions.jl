@@ -10,6 +10,8 @@ export
     points_on_sphere,
     jacobian_numerical_approximation,
     jacobian_numerical_approximation!,
+    gradient_numerical_approximation,
+    gradient_numerical_approximation!,
     zero_small_values,
     zero_small_values!,
     check_symmetric_matrix,
@@ -68,6 +70,36 @@ function jacobian_numerical_approximation!(J, func, x, myeps = 1.0e-6)
         xperturb[i] = x[i]
     end
     return J
+end
+"""
+    gradient_numerical_approximation(f, x, myeps = 1.0e-6)
+
+Evaluate the gradient (one dimensional Jacobian) of function f at x with
+steplength myeps.
+"""
+function gradient_numerical_approximation(func, x, myeps = 1.0e-6)
+    n = length(x)
+    G = Array{eltype(x)}(undef, length(x))
+    gradient_numerical_approximation!(G, func, x, myeps)
+    return G
+end
+"""
+    gradient_numerical_approximation(f, x, myeps = 1.0e-6)
+
+Evaluate the gradient (one dimensional Jacobian) of function f at x with
+steplength myeps.
+"""
+function gradient_numerical_approximation!(G, func, x, myeps = 1.0e-6)
+
+    n = length(x)
+    fx = func(x)
+    xperturb = copy(x)
+    for i=1:n
+        xperturb[i] = xperturb[i] + myeps
+        G[i] = (func(xperturb) - fx)./myeps
+        xperturb[i] = x[i]
+    end
+    return G
 end
 function check_symmetric_matrix(A)
     if norm(A - transpose(A)) < 1e-7

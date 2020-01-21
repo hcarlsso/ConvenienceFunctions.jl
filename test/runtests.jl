@@ -5,6 +5,15 @@ using Distributions
 
 @testset "Convenience Functions" begin
 
+    @testset "Gradient numerical approx" begin
+        a = randn(3)
+
+        f(x) = dot(a,x)
+        x_0 = randn(3)
+        g_0 = gradient_numerical_approximation(f, x_0, 1.0e-6)
+
+        @test isapprox(g_0, a, atol = 1.0e-6)
+    end
     @testset "Jacobian numerical approx" begin
         A = randn(4,3)
 
